@@ -1,0 +1,54 @@
+import 'package:audio_service/audio_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:gradu_pro/services/shared_preferences_services.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
+import 'constants/constants.dart';
+import 'constants/themes.dart';
+import 'data/cache/app_settings_cache.dart';
+import 'routes/app_pages.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize GetStorage for different data types
+  await GetStorage.init('bookmarks');
+  await GetStorage.init('daily_content');
+  // init SharedPreferencesService for app preference
+  await Get.putAsync(() async {
+    var service = SharedPreferencesService();
+    await service.init();
+    return service;
+  });
+  runApp(
+    ResponsiveSizer(
+      builder: (context1, orientation, screenType) {
+        return GetMaterialApp(
+          onDispose: () async {
+            // ignore: deprecated_member_use
+            await AudioService.stop();
+          },
+          supportedLocales: const [
+            Locale('ar', 'SA'), // Arabic
+          ],
+          // Set the default locale
+          locale: const Locale('ar', 'SA'),
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate
+          ],
+          debugShowCheckedModeBanner: false,
+          title: appName,
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: AppSettingsCache.getThemeMode(),
+          initialRoute: AppPages.INITIAL,
+          getPages: AppPages.routes,
+        );
+      },
+    ),
+  );
+}
